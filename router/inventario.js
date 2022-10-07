@@ -104,18 +104,22 @@ router.put('/:id', async function(req, res) {
                     color: req.body.color,
                     fechaCompra: req.body.fechaCompra,
                     precio: req.body.precio,
-                    usuario: req.body.usuario._id,
-                    marca: req.body.marca._id,
-                    tipoEquipo: req.body.tipoEquipo._id,
-                    estadoEquipo: req.body.estadoEquipo._id,
+                    usuario: req.body.usuario,
+                    marca: req.body.marca,
+                    tipoEquipo: req.body.tipoEquipo,
+                    estadoEquipo: req.body.estadoEquipo,
                 }, { new: true });
-                res.send(inventario);
+                res.status(200).json({
+                    ok: true,
+                    inventario,
+                    msg: 'Inventario actualizado correctamente'
+                })
             }           
         }
-     } catch (error) {
-         console.log(error);
-         res.status(500).send('Ocurrio un error al consultar inventarios');
-     }
+    } catch (error) {
+        console.log(error);
+        res.send('Ocurrio un error al actualizar inventario: ' + error.message);
+    }
 });
 
 router.delete('/:id', async function(req, res) {
