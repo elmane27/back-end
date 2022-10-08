@@ -7,13 +7,13 @@ router.get('/', async function(req, res) {
     try{
         const marcas = await Marca.find();
         if (marcas.length === 0) {
-            res.status(404).send("No hay estados de equipo registrados");
+            res.send("No hay estados de equipo registrados");
         } else {
             res.send(marcas);
         }       
     } catch(error) {
         console.log(error);
-        res.status(500).send('Ocurrio un error, error: ' + error);
+        res.send('Ocurrio un error, error: ' + error);
     }    
 });
 
@@ -38,13 +38,13 @@ router.post('/', async function(req, res) {
     const estado = req.body.estado || "Activo";
 
     if (nombre === '' ) {
-        return res.status(400).send('El nombre es obligatorio');
+        res.send('El nombre es obligatorio');
     }
     
     try {
         const marca = await Marca.findOne({ nombre });
         if (marca) {
-            res.status(400).send('La marca ya existe');
+            res.send('La marca ya existe');
         } else {
             const data ={
                 nombre,
@@ -52,11 +52,11 @@ router.post('/', async function(req, res) {
             }
             const marca = new Marca(data);
             await marca.save();
-            res.send(marca, 'Marca creada exitosamente', 201);
+            res.send(marca);
         }
     } catch (error) {
         console.log(error);
-        res.status(500).send('Ocurrio un error al guardar la marca, error: ' + error);
+        res.send('Ocurrio un error al guardar la marca, error: ' + error);
     }   
 });
 
@@ -75,13 +75,13 @@ router.put('/:id', async function(req, res) {
         const marca = await Marca.findOneAndUpdate({ _id: id }, data, { new: true });
         
         if (!marca) {
-            res.status(404).send('La marca no existe');
+            res.send('La marca no existe');
         } else {
             res.send(marca);
         }
     } catch (error) {
         console.log(error);
-        res.status(500).send('Ocurrio un error, error: ' + error);
+        res.send('Ocurrio un error, error: ' + error);
     }
 });
 
@@ -90,14 +90,14 @@ router.delete('/:id', async function(req, res) {
     try {
         const marca = await Marca.findOne({ _id: id });
         if (!marca) {
-            return res.status(404).send('La marca no existe');
+            res.send('La marca no existe');
         } else {
             await Marca.findByIdAndDelete(id);
-            res.send(marca, 'Marca eliminada exitosamente', 200);
+            res.send(marca);
         }
     } catch (error) {
         console.log(error);
-        res.status(500).send('Ocurrio un error al eliminar la marca, error: ' + error);
+        res.send('Ocurrio un error al eliminar la marca, error: ' + error);
     }
 });
 

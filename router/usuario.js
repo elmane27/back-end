@@ -22,13 +22,13 @@ router.get('/:id', async function(req, res) {
     try {
         const usuario = await Usuarios.findOne({ _id: id });
         if (!usuario) {
-            res.status(404).send('El usuario no existe');
+            res.send('El usuario no existe');
         } else {
             res.send(usuario);
         }
     } catch (error) {
         console.log(error);
-        res.status(500).send('Ocurrio un error al consultar el usuario');
+        res.send('Ocurrio un error al consultar el usuario');
     }
 });
 
@@ -39,17 +39,17 @@ router.post('/', async function(req, res){
     
     // validar campos vacios
     if (nombre === '') {
-        return res.status(400).send('El nombre es obligatorio');
+        return res.send('El nombre es obligatorio');
     }
 
     if (email === '') {
-        return res.status(400).send('El email es obligatorio');
+        return res.send('El email es obligatorio');
     }
 
     try {
         const usuario = await Usuarios.findOne({ email });
         if (usuario) {
-            res.status(400).send('El usuario ya existe');
+            res.send('El usuario ya existe');
         } else {
             const data = {
                 nombre,
@@ -58,11 +58,11 @@ router.post('/', async function(req, res){
             }
             const usuario = new Usuarios(data);
             await usuario.save();
-            res.send(usuario, 'Usuario creado exitosamente', 201);
+            res.send(usuario);
         }
     } catch (error) {
         console.log(error);
-        res.status(500).send('Ocurrio un error al guardar el usuario');
+        res.send('Ocurrio un error al guardar el usuario');
     }
 });
 
@@ -73,13 +73,12 @@ router.put('/:id', async function(req, res) {
         const email = req.body.email;
         const estado = req.body.estado || "Activo";
 
-        // validar campos vacios
         if (nombre === '') {
-            return res.status(400).send('El nombre es obligatorio');
+            res.send('El nombre es obligatorio');
         }
 
         if (email === '') {
-            return res.status(400).send('El email es obligatorio');
+            res.send('El email es obligatorio');
         }
 
         const data = {
@@ -91,13 +90,13 @@ router.put('/:id', async function(req, res) {
 
         const usuario = await Usuarios.findOneAndUpdate({ _id: id }, data, { new: true });
         if (!usuario) {
-            res.status(404).send('El usuario no existe');
+            res.send('El usuario no existe');
         } else {
             res.send(usuario);
         }
     } catch (error) {
         console.log(error);
-        res.status(500).send('Ocurrio un error al actualizar el usuario');
+        res.send('Ocurrio un error al actualizar el usuario');
     }
 });
 
@@ -106,10 +105,10 @@ router.delete('/:id', async function(req, res) {
     try {
         const usuario = await Usuarios.findOne({ _id: id });
         if (!usuario) {
-            res.status(404).send('El usuario no existe');
+            res.send('El usuario no existe');
         } else {
             await Usuarios.findByIdAndDelete(id);
-            res.send(usuario, 'Usuario eliminado exitosamente', 200);
+            res.send(usuario);
         }
     } catch (error) {
         console.log(error);

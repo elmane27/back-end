@@ -23,7 +23,7 @@ router.get('/', async function(req, res) {
        res.send(inventario);
     } catch (error) {
         console.log(error);
-        res.status(500).send('Ocurrio un error al consultar inventarios');
+        res.send('Ocurrio un error al consultar inventarios');
     }
 });
 
@@ -44,40 +44,54 @@ router.get('/:id', async function(req, res) {
             }
         ]);
         if (!inventario) {
-            res.status(404).send('El inventario no existe');
+            res.send('El inventario no existe');
         } else {
             res.send(inventario);
         }
     } catch (error) {
         console.log(error);
-        res.status(500).send('Ocurrio un error al consultar inventario');
+        res.send('Ocurrio un error al consultar inventario');
     }
 });
 
 router.post('/', async function(req, res) {
     try {
 
-        const serialInv = await Inventario.findOne({ serial: req.body.serial });
-        const modeloInv = await Inventario.findOne({ modelo: req.body.modelo });
-        
-        if (serialInv) {
-            res.status(400).send('El serial ya existe');
-        } else if (modeloInv) {
-            res.status(400).send('El modelo ya existe');
-        } else {        
-            const error = validarInventario(req.body);
-            if (error.length > 0) {
-                res.status(400).send(error);
-            } else {
-                const inventario = new Inventario(req.body);
-                await inventario.save();
-                res.send(inventario);
-            }
+        const { serial, modelo, marca, tipoEquipo, estadoEquipo, usuario } = req.body;
+
+        const inventarioExiste = await Inventario.findOne({ 
+            $or: [
+                { serial: serial },
+                { modelo: modelo }
+            ]
+        });
+
+        if (inventarioExiste) {
+            res.send('El serial o modelo ya existe');
+        }
+
+        const usuarioExiste = await Inventario.findOne({ usuario: usuario, estado: "Activo" });
+        const estadoExiste = await Inventario.findOne({ estadoEquipo: estadoEquipo, estado: "Activo" });
+        const marcaExiste = await Inventario.findOne({ marca: marca, estado: "Activo" });
+        const tipoExiste = await Inventario.findOne({ tipoEquipo: tipoEquipo, estado: "Activo" });
+
+        if (usuarioExiste) {
+            res.send('El usuario ya tiene un equipo asignado');
+        } else if (estadoExiste) {
+            res.send('El equipo ya se encuentra asignado');
+        } else if (marcaExiste) {
+            res.send('La marca no existe');
+        } else if (tipoExiste) {
+            res.send('El tipo de equipo no existe');
+        } else {
+            const inventario = new Inventario( req.body );
+            await inventario.save();
+            res.send(inventario);
         }
 
     } catch (error) {
         console.log(error);
-        res.status(500).send('Ocurrio un error al crear inventario');
+        res.send('Ocurrio un error al crear inventario');
     }
 });
 
@@ -88,13 +102,13 @@ router.put('/:id', async function(req, res) {
         const inventarioExiste = await Inventario.findOne({ _id: id });
 
         if (!inventarioExiste) {
-            return res.status(400).send('El inventario no existe');
+            return res.send('El inventario no existe');
         } else {
 
             const validaciones = validarInventario(req);
         
             if(validaciones.length > 0) {
-                return res.status(400).send(validaciones);
+                res.send(validaciones);
             } else {
                 const inventario = await Inventario.findByIdAndUpdate(id, {
                     serial: req.body.serial,
@@ -109,11 +123,7 @@ router.put('/:id', async function(req, res) {
                     tipoEquipo: req.body.tipoEquipo,
                     estadoEquipo: req.body.estadoEquipo,
                 }, { new: true });
-                res.status(200).json({
-                    ok: true,
-                    inventario,
-                    msg: 'Inventario actualizado correctamente'
-                })
+                res.send(inventario);
             }           
         }
     } catch (error) {
@@ -129,14 +139,14 @@ router.delete('/:id', async function(req, res) {
         const inventarioExiste = await Inventario.findOne({ _id: id });
 
         if (!inventarioExiste) {
-            return res.status(400).send('El inventario no existe');
+            res.send('El inventario no existe');
         } else {
             const inventario = await Inventario.findByIdAndDelete(id);
-            res.send(inventario, 'Inventario eliminado', 200);            
+            res.send(inventario);            
         }
      } catch (error) {
          console.log(error);
-         res.status(500).send('Ocurrio un error al consultar inventarios');
+         res.send('Ocurrio un error al consultar inventarios');
      }
 });
 
