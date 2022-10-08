@@ -54,37 +54,14 @@ router.get('/:id', async function(req, res) {
     }
 });
 
-router.post('/', async function(req, res) {
+router.post('/', async function(req, res) {    
     try {
 
-        const { serial, modelo, marca, tipoEquipo, estadoEquipo, usuario } = req.body;
-
-        const inventarioExiste = await Inventario.findOne({ 
-            $or: [
-                { serial: serial },
-                { modelo: modelo }
-            ]
-        });
-
-        if (inventarioExiste) {
-            res.send('El serial o modelo ya existe');
-        }
-
-        const usuarioExiste = await Inventario.findOne({ usuario: usuario, estado: "Activo" });
-        const estadoExiste = await Inventario.findOne({ estadoEquipo: estadoEquipo, estado: "Activo" });
-        const marcaExiste = await Inventario.findOne({ marca: marca, estado: "Activo" });
-        const tipoExiste = await Inventario.findOne({ tipoEquipo: tipoEquipo, estado: "Activo" });
-
-        if (usuarioExiste) {
-            res.send('El usuario ya tiene un equipo asignado');
-        } else if (estadoExiste) {
-            res.send('El equipo ya se encuentra asignado');
-        } else if (marcaExiste) {
-            res.send('La marca no existe');
-        } else if (tipoExiste) {
-            res.send('El tipo de equipo no existe');
+        const { error } = validarInventario(req.body);
+        if (error) {
+            res.send(error.details[0].message);
         } else {
-            const inventario = new Inventario( req.body );
+            const inventario = new Inventario(req.body);
             await inventario.save();
             res.send(inventario);
         }
@@ -109,21 +86,13 @@ router.put('/:id', async function(req, res) {
         
             if(validaciones.length > 0) {
                 res.send(validaciones);
-            } else {
-                const inventario = await Inventario.findByIdAndUpdate(id, {
-                    serial: req.body.serial,
-                    modelo: req.body.modelo,
-                    descripcion: req.body.descripcion,
-                    foto: req.body.foto,
-                    color: req.body.color,
-                    fechaCompra: req.body.fechaCompra,
-                    precio: req.body.precio,
-                    usuario: req.body.usuario,
-                    marca: req.body.marca,
-                    tipoEquipo: req.body.tipoEquipo,
-                    estadoEquipo: req.body.estadoEquipo,
-                }, { new: true });
-                res.send(inventario);
+            } else {                
+                const inventario = await Inventario.findByIdAndUpdate(id, req.body, { new: true });
+                res.status(200).json({
+                    ok: true,
+                    inventario,
+                    msg: 'Inventario actualizado correctamente'
+                });                
             }           
         }
     } catch (error) {
