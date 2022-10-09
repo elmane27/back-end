@@ -8,17 +8,18 @@ const app = express();
 const port = process.env.PORT || 4000;
 
 // origins *
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Method');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-    res.header('Allow', 'GET, POST, OPTIONS, PUT, DELETE');
-    next();
-});
+app.use(cors({
+    AccessControlAllowOrigin: '*',
+    AccessControlAllowHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+    AccessControlAllowMethods: 'GET, POST, PUT, DELETE, OPTIONS',
+    AccessControlAllowCredentials: true,
+    AccessControlMaxAge: 86400
+}));
 
 getConnection();
 
 // parseo JSON
+app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 app.use('/usuario', require('./router/usuario'));
